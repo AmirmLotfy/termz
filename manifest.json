@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "Termz",
+  "version": "1.0.0",
+  "description": "Automated AI-powered analysis of legal documents, privacy policies, and terms of service. Detects risks and translates legal jargon into plain language.",
+  "homepage_url": "https://termz.it.com",
+  
+  "trial_tokens": [
+    "Az7wgM8+pNu1I2zbQA1S0uoyyDZc/QiX05aRf2tw8Dso3tHMcW4cpbddOVYhHQf5+mc78htk2Nms4PS7db0Q4wcAAACPeyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vamJwbW1wbmZlaWdraWtjbG9tY2lwY2NnZmJlcGpoYm0iLCJmZWF0dXJlIjoiQUlQcm9tcHRBUElNdWx0aW1vZGFsSW5wdXQiLCJleHBpcnkiOjE3NzQzMTA0MDAsImlzVGhpcmRQYXJ0eSI6dHJ1ZX0=",
+    "A1NKTqGhqW8g/+RFUoRYuSAMignz+HPnYy4cPrGhy4kcHN/JMcSokGdpDwnyrvOrJFT664gFEej7vFzzF3xM/gsAAACAeyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vamJwbW1wbmZlaWdraWtjbG9tY2lwY2NnZmJlcGpoYm0iLCJmZWF0dXJlIjoiQUlXcml0ZXJBUEkiLCJleHBpcnkiOjE3Njk0NzIwMDAsImlzVGhpcmRQYXJ0eSI6dHJ1ZX0=",
+    "A3gpDKnjbRXsWh0vXUEmUpO+mOaJ5Ov4SKXxjPNq+Aj933PdY5iOU4yyaM4AyTCfF6GxsqpMd5vea+GJ7TPQ5QoAAACCeyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vamJwbW1wbmZlaWdraWtjbG9tY2lwY2NnZmJlcGpoYm0iLCJmZWF0dXJlIjoiQUlSZXdyaXRlckFQSSIsImV4cGlyeSI6MTc2OTQ3MjAwMCwiaXNUaGlyZFBhcnR5Ijp0cnVlfQ=="
+  ],
+  
+  "permissions": [
+    "sidePanel",
+    "tabs",
+    "notifications",
+    "storage",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "side_panel": {
+    "default_path": "sidepanel/sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Termz - Legal Document Analyzer"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

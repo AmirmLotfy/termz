@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termz - Legal Document Analyzer</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <!-- Header Section -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo-section">
+        <img src="../icons/icon48.png" alt="Termz Logo" class="logo">
+        <h1 class="app-name">Termz</h1>
+      </div>
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="icon-btn" title="Theme" aria-label="Toggle theme">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/>
+          </svg>
+        </button>
+        <button id="historyBtn" class="icon-btn" title="History" aria-label="View analysis history">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </button>
+        <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Open settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1v2"/>
+            <path d="M12 21v2"/>
+            <path d="M4.22 4.22l1.42 1.42"/>
+            <path d="M18.36 18.36l1.42 1.42"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state hidden">
+      <div class="spinner"></div>
+      <p class="loading-text">Analyzing document...</p>
+      <p class="loading-subtext">This may take a few seconds</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="error-state hidden">
+      <div class="error-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <h2 class="error-title">Analysis Error</h2>
+      <p class="error-message" id="errorMessage"></p>
+      <button id="retryBtn" class="btn btn-primary">Try Again</button>
+    </div>
+
+    <!-- Welcome State (No Analysis Yet) -->
+    <div id="welcomeState" class="welcome-state">
+      <div class="welcome-icon">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+      </div>
+      <h2 class="welcome-title">Welcome to Termz</h2>
+      <p class="welcome-text">
+        Automatically analyze legal documents, privacy policies, and terms of service.
+        Get instant risk detection and plain-language explanations.
+      </p>
+      <div class="welcome-actions">
+        <p class="welcome-hint">Browse to a legal document page, or paste text below to analyze manually.</p>
+      </div>
+    </div>
+
+    <!-- Analysis Dashboard (Hidden initially) -->
+    <div id="analysisView" class="analysis-view hidden">
+      
+      <!-- Page Info -->
+      <div class="page-info">
+        <h2 id="pageTitle" class="page-title">Document Title</h2>
+        <p id="pageUrl" class="page-url">https://example.com/privacy</p>
+        <div class="page-meta">
+          <span id="readingTime" class="meta-item"></span>
+          <span id="complexity" class="meta-item"></span>
+          <span id="documentType" class="meta-item"></span>
+        </div>
+      </div>
+
+      <!-- Risk Score Gauge -->
+      <div class="risk-gauge-container">
+        <h3 class="section-title">Risk Assessment</h3>
+        <div class="risk-gauge">
+          <div class="gauge-visual">
+            <svg width="120" height="80" viewBox="0 0 120 80">
+              <path id="gaugeBg" d="M 10 70 A 50 50 0 0 1 110 70" stroke="#e0e0e0" stroke-width="12" fill="none"/>
+              <path id="gaugeProgress" d="M 10 70 A 50 50 0 0 1 110 70" stroke="#4CAF50" stroke-width="12" fill="none" stroke-dasharray="157" stroke-dashoffset="157"/>
+              <circle cx="60" cy="70" r="3" fill="#333"/>
+            </svg>
+            <div class="gauge-needle" id="gaugeNeedle"></div>
+          </div>
+          <div class="risk-score-text">
+            <span class="risk-label" id="riskLabel">Low Risk</span>
+            <span class="risk-description" id="riskDescription">This document appears relatively fair</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Executive Summary -->
+      <div class="executive-summary">
+        <h3 class="section-title">Executive Summary</h3>
+        <p id="executiveSummary" class="summary-text">Loading...</p>
+      </div>
+
+      <!-- Tabs Navigation -->
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" data-tab="risks" role="tab" aria-selected="true" aria-controls="risksTab">
+          Risk Alerts
+        </button>
+        <button class="tab-btn" data-tab="glossary" role="tab" aria-selected="false" aria-controls="glossaryTab">
+          Glossary
+        </button>
+        <button class="tab-btn" data-tab="summary" role="tab" aria-selected="false" aria-controls="summaryTab">
+          Summary
+        </button>
+        <button class="tab-btn" data-tab="keypoints" role="tab" aria-selected="false" aria-controls="keypointsTab">
+          Key Points
+        </button>
+      </div>
+
+      <!-- Tab Content Panels -->
+      <div class="tab-content">
+        
+        <!-- Risk Alerts Tab -->
+        <div id="risksTab" class="tab-panel active" role="tabpanel">
+          <div id="risksList" class="risks-list">
+            <!-- Risk items will be inserted here -->
+          </div>
+          <div id="noRisks" class="no-content hidden">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--success-color); margin-bottom: 12px;">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <p>No significant risks detected in this document.</p>
+          </div>
+        </div>
+
+        <!-- Glossary Tab -->
+        <div id="glossaryTab" class="tab-panel hidden" role="tabpanel">
+          <div id="glossaryList" class="glossary-list">
+            <!-- Glossary items will be inserted here -->
+          </div>
+          <div id="noGlossary" class="no-content hidden">
+            <p>No legal terms found to define.</p>
+          </div>
+        </div>
+
+        <!-- Summary Tab -->
+        <div id="summaryTab" class="tab-panel hidden" role="tabpanel">
+          <div id="fullSummary" class="full-summary">
+            <!-- Full summary will be inserted here -->
+          </div>
+        </div>
+
+        <!-- Key Points Tab -->
+        <div id="keypointsTab" class="tab-panel hidden" role="tabpanel">
+          <ul id="keyPointsList" class="key-points-list">
+            <!-- Key points will be inserted here -->
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Manual Input Section -->
+    <div id="manualInputSection" class="manual-input-section">
+      <h3 class="section-title">Manual Analysis</h3>
+      <p class="section-description">Paste legal text or upload a document for analysis</p>
+      
+      <div class="input-tabs">
+        <button class="input-tab-btn active" data-input-tab="text">Text</button>
+        <button class="input-tab-btn" data-input-tab="file">Upload File</button>
+      </div>
+
+      <div class="input-content">
+        
+        <!-- Text Input -->
+        <div id="textInputPanel" class="input-panel active">
+          <div class="text-input-container">
+            <textarea 
+              id="manualTextArea" 
+              class="manual-textarea" 
+              placeholder="Paste legal text here (privacy policy, terms of service, etc.)..."
+              rows="8"
+              aria-label="Legal text input"
+            ></textarea>
+            <div class="char-count" id="charCount">0 characters</div>
+          </div>
+          <button id="analyzeTextBtn" class="btn btn-primary" style="width: 100%; margin-top: 12px;" disabled>
+            Analyze Text
+          </button>
+        </div>
+
+        <!-- File Upload -->
+        <div id="fileInputPanel" class="input-panel hidden">
+          <div class="file-upload-area" id="fileUploadArea">
+            <input 
+              type="file" 
+              id="fileInput" 
+              accept=".pdf,.txt,.doc,.docx" 
+              class="file-input"
+              aria-label="Document file input"
+            >
+            <div class="upload-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <p class="upload-text">Click to upload or drag file here</p>
+            <p class="upload-hint">Supports PDF, TXT, DOC, and DOCX files (max 10MB)</p>
+          </div>
+          
+          <div id="selectedFile" class="selected-file hidden">
+            <div class="file-details">
+              <div class="file-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+              <div class="file-info">
+                <div class="file-name" id="fileName"></div>
+                <div class="file-size" id="fileSize"></div>
+              </div>
+            </div>
+            <button id="removeFileBtn" class="remove-file-btn" aria-label="Remove file">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div id="fileProgress" class="file-progress hidden">
+            <div class="progress-bar">
+              <div id="fileProgressBar" class="progress-fill"></div>
+            </div>
+          </div>
+          
+          <button id="analyzeFileBtn" class="btn btn-primary" style="width: 100%; margin-top: 12px;" disabled>
+            Analyze Document
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- History View (Hidden initially) -->
+    <div id="historyView" class="history-view hidden">
+      <div class="view-header">
+        <button id="backFromHistory" class="btn-back" aria-label="Back to analysis">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          <span>Back</span>
+        </button>
+        <h2 class="view-title">Analysis History</h2>
+      </div>
+      
+      <div class="history-header">
+        <input 
+          type="text" 
+          id="historySearch" 
+          class="search-input" 
+          placeholder="Search history..."
+          aria-label="Search analysis history"
+        >
+        <button id="clearHistoryBtn" class="btn btn-secondary">Clear All</button>
+      </div>
+
+      <div id="historyList" class="history-list">
+        <!-- History items will be inserted here -->
+      </div>
+
+      <div id="noHistory" class="no-content">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--text-tertiary); margin-bottom: 12px;">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <p>No analysis history yet.</p>
+        <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 8px;">Start analyzing documents to build your history.</p>
+      </div>
+    </div>
+
+    <!-- Settings View (Hidden initially) -->
+    <div id="settingsView" class="settings-view hidden">
+      <div class="view-header">
+        <button id="backFromSettings" class="btn-back" aria-label="Back to analysis">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          <span>Back</span>
+        </button>
+        <h2 class="view-title">Settings</h2>
+      </div>
+
+      <div class="settings-list">
+        
+        <div class="settings-section">
+          <h3 class="section-title">Detection & Notifications</h3>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3 class="setting-title">Auto-Detection</h3>
+              <p class="setting-description">Automatically detect legal documents as you browse</p>
+            </div>
+            <label>
+              <input type="checkbox" id="autoDetectionToggle" checked>
+              <span class="toggle-switch"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3 class="setting-title">Notifications</h3>
+              <p class="setting-description">Show alerts when legal documents are detected</p>
+            </div>
+            <label>
+              <input type="checkbox" id="notificationsToggle" checked>
+              <span class="toggle-switch"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3 class="setting-title">Auto-Open Side Panel</h3>
+              <p class="setting-description">Automatically open side panel when legal documents are detected</p>
+            </div>
+            <label>
+              <input type="checkbox" id="autoOpenPanelToggle" checked>
+              <span class="toggle-switch"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="section-title">Analysis Preferences</h3>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3 class="setting-title">Analysis Depth</h3>
+              <p class="setting-description">Choose how thoroughly to analyze documents</p>
+            </div>
+            <select id="analysisDepthSelect" class="setting-select">
+              <option value="quick">Quick Scan</option>
+              <option value="standard" selected>Standard</option>
+              <option value="deep">Deep Analysis</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3 class="setting-title">Output Language</h3>
+              <p class="setting-description">Language for AI outputs (risk analysis and summaries)</p>
+            </div>
+            <select id="outputLanguageSelect" class="setting-select" aria-label="Output language">
+              <option value="en">English (en)</option>
+              <option value="es">Spanish (es)</option>
+              <option value="ja">Japanese (ja)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="section-title">Appearance</h3>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3 class="setting-title">Theme</h3>
+              <p class="setting-description">Choose your preferred color theme</p>
+            </div>
+            <select id="themeSelect" class="setting-select">
+              <option value="auto">Auto (system preference)</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="section-title">AI Status</h3>
+          <p class="setting-description">Chrome Built-in AI APIs availability</p>
+          
+          <div id="apiStatusContainer" class="api-status-container">
+            <div class="api-status-loading">Checking API status...</div>
+          </div>
+          
+          <button id="refreshApiStatusBtn" class="btn btn-secondary" style="margin-top: 10px; width: 100%;">Refresh Status</button>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="section-title">Site Exclusions</h3>
+          <p class="setting-description">Websites to never analyze automatically</p>
+          
+          <div class="exclusion-input-container">
+            <input type="text" id="exclusionInput" class="exclusion-input" placeholder="example.com" aria-label="Website domain to exclude">
+            <button id="addExclusionBtn" class="btn btn-secondary">Add</button>
+          </div>
+
+          <div id="exclusionsList" class="exclusions-list">
+            <!-- Exclusions will be inserted here -->
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="section-title">Data Management</h3>
+          
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <button id="exportDataBtn" class="btn btn-secondary" style="width: 100%;">Export Data</button>
+            <button id="clearDataBtn" class="btn btn-secondary" style="width: 100%;">Clear All Data</button>
+          </div>
+        </div>
+
+        <div class="settings-section" style="border-bottom: none;">
+          <h3 class="section-title">About</h3>
+          <p class="setting-description">
+            Termz v1.0.0<br>
+            Automated AI-powered legal document analysis.<br>
+            <a href="https://termz.it.com/privacy" target="_blank" style="color: var(--primary-color); text-decoration: none;">Privacy Policy</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Load main side panel script as module -->
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>

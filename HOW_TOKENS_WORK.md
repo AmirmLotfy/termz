@@ -1,0 +1,252 @@
+# 🔐 How Origin Trial Tokens Work in Chrome
+
+**Question:** How does Chrome know which token in the `trial_tokens` array corresponds to which API?
+
+**Answer:** **Tokens are self-describing!** Chrome automatically identifies which API each token enables.
+
+---
+
+## 🎯 Key Insight: Tokens Contain Metadata
+
+Each Origin Trial token is **encoded with metadata** that tells Chrome:
+- Which API it's for (Prompt API, Writer API, Rewriter API, etc.)
+- Which origin/extension it's registered for
+- When it expires
+- Other trial-specific information
+
+**You don't need to map tokens to APIs manually!**
+
+---
+
+## ✅ How It Works
+
+### 1. **Token Structure (Encoded)**
+
+When you register for an Origin Trial, Chrome generates a token that includes:
+
+```
+Token Metadata (encoded):
+├── API Name: "Prompt API"
+├── Origin: "chrome-extension://your-extension-id"
+├── Expiry Date: "2025-04-30"
+└── Other trial data...
+```
+
+This metadata is **cryptographically signed** and **base64-encoded** into the long token string you receive.
+
+---
+
+### 2. **Chrome Reads All Tokens Automatically**
+
+When your extension loads, Chrome:
+
+1. **Reads** all tokens in the `trial_tokens` array
+2. **Decodes** each token to extract its metadata
+3. **Verifies** the signature and checks:
+   - Is this token for this extension ID?
+   - Has this token expired?
+   - Which API does this token enable?
+4. **Enables** the corresponding API if the token is valid
+
+**This all happens automatically!**
+
+---
+
+### 3. **Order Doesn't Matter**
+
+You can put tokens in **any order** in the array:
+
+```json
+"trial_tokens": [
+  "TOKEN_FOR_REWRITER_API",    // Order doesn't matter
+  "TOKEN_FOR_PROMPT_API",      // Chrome reads metadata
+  "TOKEN_FOR_WRITER_API"       // and enables the right APIs
+]
+```
+
+Or:
+
+```json
+"trial_tokens": [
+  "TOKEN_FOR_PROMPT_API",      // This order works too
+  "TOKEN_FOR_WRITER_API",
+  "TOKEN_FOR_REWRITER_API"
+]
+```
+
+**Both are equivalent!** Chrome will enable all 3 APIs correctly.
+
+---
+
+## 📋 What You Need to Do
+
+### ✅ Your Responsibility:
+1. **Register** for each API separately at https://developer.chrome.com/origintrials/
+2. **Get** the 3 tokens (one for each API)
+3. **Add** all tokens to the `trial_tokens` array
+
+### ✅ Chrome's Responsibility:
+1. **Read** all tokens when extension loads
+2. **Decode** each token's metadata
+3. **Enable** the correct API for each token
+4. **Make APIs available** to your extension code
+
+---
+
+## 🔍 Example Flow
+
+### Step 1: You Register for Prompt API
+```
+Registration:
+- API: Prompt API
+- Extension ID: abcd1234
+- Result: TOKEN_A_WITH_METADATA
+```
+
+### Step 2: Chrome Decodes the Token
+
+When your extension loads:
+
+```javascript
+// Chrome internally does this:
+const tokenMetadata = decodeToken("TOKEN_A_WITH_METADATA");
+
+// Metadata contains:
+{
+  apiName: "Prompt API",
+  origin: "chrome-extension://abcd1234",
+  expiry: "2025-04-30",
+  signature: "valid"
+}
+
+// Chrome then enables:
+window.ai.languageModel = ✅ Available!
+```
+
+### Step 3: Your Code Just Works
+
+```javascript
+// You can now use the API:
+const session = await window.ai.languageModel.create();
+// No need to reference which token enabled this!
+```
+
+---
+
+## 🎓 Technical Details
+
+### Token Format
+
+Origin Trial tokens are **JSON Web Tokens (JWT-like)** that contain:
+
+```
+Header:
+- Algorithm: RS256 (RSA Signature)
+
+Payload:
+- origin: "chrome-extension://your-id"
+- feature: "PromptAPI" (or "WriterAPI", "RewriterAPI")
+- expiry: Unix timestamp
+- isSubdomain: false
+- isThirdParty: false
+
+Signature:
+- Signed by Chrome's Origin Trial private key
+- Verified using Chrome's public key
+```
+
+### Verification Process
+
+1. **Chrome decodes** the base64 token
+2. **Extracts** the payload (API name, origin, expiry)
+3. **Verifies** the signature using Chrome's public key
+4. **Checks** origin matches your extension ID
+5. **Checks** token hasn't expired
+6. **Enables** the API if all checks pass
+
+---
+
+## ❓ Common Questions
+
+### Q: Can I use the same token for multiple APIs?
+**A:** ❌ No. Each token is encoded for a specific API. You need separate tokens.
+
+### Q: Does the order of tokens in the array matter?
+**A:** ❌ No. Chrome reads all tokens and identifies which API each one enables automatically.
+
+### Q: What if I put a Prompt API token twice?
+**A:** ⚠️ Chrome will just enable the Prompt API once. Duplicate tokens are harmless but unnecessary.
+
+### Q: Can I see what's inside my token?
+**A:** ✅ Yes! Tokens are base64-encoded. You can decode them (but not modify them - they're signed).
+
+Try this in your browser console:
+```javascript
+const token = "YOUR_TOKEN_HERE";
+const parts = token.split('.');
+const payload = JSON.parse(atob(parts[1]));
+console.log(payload);
+// Shows: { origin, feature, expiry, etc. }
+```
+
+### Q: What if I mix up tokens (put Writer token in Prompt API registration)?
+**A:** 🤔 You can't "mix them up" - tokens are generated by Chrome when you register. Each token is already tied to the specific API you registered for.
+
+### Q: Do I need to tell my code which token to use?
+**A:** ❌ No! Your code just calls the APIs. Chrome already enabled them using the tokens.
+
+---
+
+## ✅ Summary
+
+### 🎯 The Key Point:
+
+**Tokens are self-describing!** Each token contains metadata that tells Chrome:
+- "I am for the Prompt API"
+- "I am for this specific extension"
+- "I expire on this date"
+
+**Chrome automatically:**
+- Reads all tokens
+- Decodes their metadata
+- Enables the correct APIs
+
+**You just need to:**
+- Get the tokens
+- Put them in `manifest.json`
+- Start using the APIs!
+
+---
+
+## 📚 References
+
+- **Chrome Origin Trials Documentation**: https://developer.chrome.com/docs/web-platform/origin-trials
+- **trial_tokens Manifest Reference**: https://developer.chrome.com/docs/extensions/reference/manifest/trial_tokens
+- **Built-in AI APIs**: https://developer.chrome.com/docs/ai/built-in-apis
+
+---
+
+## 🎉 In Practice for Termz
+
+For your extension, this means:
+
+```json
+"trial_tokens": [
+  "A1B2C3...",  // Could be Prompt, Writer, or Rewriter
+  "X7Y8Z9...",  // Could be any of the three
+  "M4N5O6..."   // Could be any of the three
+]
+```
+
+**Chrome will automatically:**
+- ✅ Enable Prompt API if a Prompt token is present
+- ✅ Enable Writer API if a Writer token is present
+- ✅ Enable Rewriter API if a Rewriter token is present
+- ✅ Enable Summarizer API (no token needed)
+
+**Result:** All 4 APIs work perfectly! 🚀
+
+---
+
+**Bottom Line:** You don't need to worry about which token is which. Just get all 3 tokens, put them in the array in any order, and Chrome handles the rest! ✨
+
