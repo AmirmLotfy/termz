@@ -77,18 +77,22 @@ Termz proactively:
 
 ### 💾 Analysis History
 - Save and review past analyses
-- Search through previous documents
-- Export results as JSON
+- Search through previous documents by title or content
+- Click any history item to view its full analysis
+- Export all data as JSON
+- Clear all history with one click
 
 ### 🎯 Manual Analysis
-- Paste any legal text for instant analysis
-- Upload PDF, TXT, DOC, or DOCX files
-- Right-click selected text: "Analyze with Termz"
+- Paste any legal text for instant analysis (with character counter)
+- Upload PDF, TXT, DOC, or DOCX files (drag-and-drop supported)
+- Right-click selected text: "Analyze selected text with Termz"
+- Right-click context menu: "Open Termz Website" to visit https://termz.it.com
 
 ### 🔔 Smart Notifications
 - Get alerted when legal documents are detected
-- High-risk clause warnings
+- Click notification to instantly analyze or dismiss
 - Customizable notification preferences
+- Option to auto-open side panel on detection
 
 ## Installation
 
@@ -129,9 +133,9 @@ Download the AI model:
 
 1. **Clone or download this repository:**
    ```bash
-   # Clone the repository (replace with actual GitHub URL when available)
-   # git clone https://github.com/yourusername/termz.git
-   # cd termz
+   # Clone the repository
+   git clone https://github.com/AmirmLotfy/termz.git
+   cd termz
    ```
 
 2. **Load the extension in Chrome:**
@@ -157,8 +161,8 @@ Download the AI model:
 ### Manual Analysis
 1. Click the Termz extension icon to open the side panel
 2. Choose one of three options:
-   - **Paste text**: Copy legal text and paste it into the text area
-   - **Upload file**: Click "Upload" and select a PDF, TXT, DOC, or DOCX file
+   - **Paste text**: Copy legal text and paste it into the text area (character counter shows input length)
+   - **Upload file**: Click "Click to upload or drag file here" or drag and drop a PDF, TXT, DOC, or DOCX file
    - **Right-click**: Select text on any page, right-click, and choose "Analyze selected text with Termz"
 3. Click "Analyze" and wait for the AI to process the document
 4. Review the results in the side panel
@@ -225,38 +229,69 @@ termz/
 ├── content.js            # Page detection script
 ├── sidepanel/
 │   ├── sidepanel.html    # Side panel UI
-│   ├── sidepanel.css     # Styling
+│   ├── sidepanel.css     # Styling & dark mode
 │   └── sidepanel.js      # UI logic
 ├── utils/
 │   ├── ai-analyzer.js    # AI API integration
 │   ├── detector.js       # Legal page detection
 │   ├── storage.js        # Data persistence
-│   └── pdf-parser.js     # Document parsing
-└── icons/                # Extension icons
+│   └── pdf-parser.js     # Document parsing (PDF/DOCX)
+├── vendor/               # Bundled libraries
+│   ├── pdfjs/           # PDF.js for PDF parsing
+│   └── mammoth/         # Mammoth.js for DOCX parsing
+└── icons/                # Extension icons (16, 48, 128, 256, 512)
 ```
 
 ## Settings & Customization
 
 Access settings by clicking the gear icon in the side panel:
 
+### Detection & Notifications
 - **Auto-detection**: Toggle automatic legal page detection
 - **Notifications**: Enable/disable detection alerts
-- **Analysis Depth**: Choose between quick scan or deep analysis
-- **Site Exclusions**: Add domains to never analyze
-- **History**: View, search, or clear analysis history
+- **Auto-Open Side Panel**: Automatically open the side panel when legal documents are detected
+
+### Analysis Preferences
+- **Analysis Depth**: Choose between Quick Scan, Standard, or Deep Analysis
+- **Output Language**: Select AI output language - English (en), Spanish (es), or Japanese (ja)
+
+### Appearance
+- **Theme**: Choose Auto (system preference), Light, or Dark mode
+
+### AI Status
+- **API Availability**: View real-time status of Chrome's Built-in AI APIs
+  - Shows which APIs are ready, require tokens, or need model download
+  - **Prepare Model**: If an API shows "Download Needed", click "Prepare" to download the on-device model
+  - **Diagnostics**: Expand "Show diagnostics" to see raw API status data for troubleshooting
+- **Refresh Status**: Manually refresh API availability
+
+### Site Exclusions
+- **Domain Exclusions**: Add domains (e.g., `example.com`) to never analyze automatically
+
+### Data Management
+- **Export Data**: Download all settings and analysis history as JSON
+- **Clear All Data**: Remove all stored settings, history, and exclusions
+
+### About
+- Extension version information
+- Link to Privacy Policy: https://termz.it.com/privacy
 
 ## Browser Compatibility
 
-- **Supported**: Chrome Dev/Canary 128+
+- **Supported**: Chrome Dev/Canary 138+
 - **Requires**: Gemini Nano enabled (see installation instructions)
 - **OS**: Windows, macOS, Linux, ChromeOS
 
 ## Troubleshooting
 
 ### "AI APIs not available" Error
-- Ensure you're using Chrome Dev or Canary version 128+
+- Ensure you're using Chrome Dev or Canary version 138+
 - Verify flags are enabled in `chrome://flags`
 - Check model is downloaded in `chrome://components`
+- **Check API Status**: Go to Settings → AI Status to see which APIs are available
+- If an API shows "Download Needed", click the "Prepare" button to download the model
+- Use the "Show diagnostics" expander to see detailed API status information
+- Ensure all 3 Origin Trial tokens are correctly added to `manifest.json`
 - Restart Chrome after making changes
 
 ### Detection Not Working
@@ -281,9 +316,9 @@ Want to contribute? See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ### Development Setup
 ```bash
-# Clone the repository (replace with actual GitHub URL when available)
-# git clone https://github.com/yourusername/termz.git
-# cd termz
+# Clone the repository
+git clone https://github.com/AmirmLotfy/termz.git
+cd termz
 
 # No build step needed! Just load in Chrome
 ```
